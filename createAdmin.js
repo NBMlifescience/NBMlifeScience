@@ -8,12 +8,12 @@ const createAdmin = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB Connected");
 
-    const hashedPassword = await bcrypt.hash("123456", 10);
+    const hashedPassword = await bcrypt.hash("nbmlife25Lac", 10);
 
     await Admin.deleteMany({}); // optional: clean old wrong data
 
     await Admin.create({
-      username: "admin",
+      username: "nbmlifescienceorg.in",
       password: hashedPassword,
       shopName: "NBM Billing",
       shopAddress: "Your Shop Address",
