@@ -1,0 +1,56 @@
+<%- include('../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Trash Bills</h3>
+
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="/bills" class="btn btn-secondary">Back to Bills</a>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Bill No.</th>
+            <th>Buyer</th>
+            <th>Deleted On</th>
+            <th>Total</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (bills.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center py-4">No deleted bills</td>
+            </tr>
+          <% } %>
+
+          <% bills.forEach((bill, index) => { %>
+            <tr>
+              <td><%= index + 1 %></td>
+              <td><strong><%= bill.billNumber || bill._id.toString().slice(-6).toUpperCase() %></strong></td>
+              <td><%= bill.buyer?.name || '-' %></td>
+              <td><%= bill.deletedAt ? new Date(bill.deletedAt).toLocaleDateString() : '' %></td>
+              <td>₹ <%= Number(bill.totalAmount).toFixed(2) %></td>
+              <td class="text-center">
+                <a
+                  href="/bill/<%= bill._id %>/restore"
+                  class="btn btn-sm btn-success"
+                  onclick="return confirm('Restore this bill?')"
+                >
+                  Restore
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

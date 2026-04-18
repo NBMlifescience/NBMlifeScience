@@ -1,0 +1,43 @@
+<%- include('../partials/header') %>
+
+<h3 class="mb-4">Shop Settings</h3>
+
+<form method="POST" action="/settings" class="row g-3">
+
+  <div class="col-md-6">
+    <label class="form-label">Shop Name</label>
+    <input type="text" name="shopName" class="form-control" value="<%= admin.shopName || '' %>">
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Phone</label>
+    <input type="text" name="shopPhone" class="form-control" value="<%= admin.shopPhone || '' %>">
+  </div>
+
+  <div class="col-md-12">
+    <label class="form-label">Address</label>
+    <textarea name="shopAddress" class="form-control" rows="3"><%= admin.shopAddress || '' %></textarea>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">GSTIN</label>
+    <input type="text" name="shopGSTIN" class="form-control" value="<%= admin.shopGSTIN || '' %>">
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Drug License</label>
+    <input type="text" name="shopDrugLicense" class="form-control" value="<%= admin.shopDrugLicense || '' %>">
+  </div>
+
+  <div class="col-md-12">
+    <label class="form-label">Logo Path</label>
+    <input type="text" name="logoPath" class="form-control" value="<%= admin.logoPath || '/images/logo.png' %>">
+    <small class="text-muted">Example: /images/logo.png</small>
+  </div>
+
+  <div class="col-12">
+    <button class="btn btn-success">Save Settings</button>
+  </div>
+</form>
+
+<%- include('../partials/footer') %>

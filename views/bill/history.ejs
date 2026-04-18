@@ -1,0 +1,96 @@
+<%- include('../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h3 class="mb-0">Bill History</h3>
+
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="/bill/create" class="btn btn-primary">+ Create Bill</a>
+   <a href="/bill/trash" class="btn btn-warning">Trash Bills</a>
+    <a href="/dashboard" class="btn btn-secondary">Dashboard</a>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <form method="GET" action="/bills" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">From Date</label>
+        <input type="date" name="from" value="<%= from || '' %>" class="form-control">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">To Date</label>
+        <input type="date" name="to" value="<%= to || '' %>" class="form-control">
+      </div>
+
+      <div class="col-md-4 d-flex gap-2">
+        <button class="btn btn-success">Filter</button>
+        <a href="/bills" class="btn btn-outline-secondary">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Bill No.</th>
+            <th>Buyer</th>
+            <th>Date</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (bills.length === 0) { %>
+            <tr>
+              <td colspan="7" class="text-center py-4">No bills found</td>
+            </tr>
+          <% } %>
+
+          <% bills.forEach((bill, index) => { %>
+            <tr>
+              <td><%= index + 1 %></td>
+
+              <td>
+                <strong><%= bill.billNumber || bill._id.toString().slice(-6).toUpperCase() %></strong>
+              </td>
+
+              <td>
+                <div><strong><%= bill.buyer?.name || '-' %></strong></div>
+                <small class="text-muted"><%= bill.buyer?.phone || '' %></small>
+              </td>
+
+              <td><%= new Date(bill.date).toLocaleDateString() %></td>
+
+              <td><%= bill.items.length %></td>
+
+              <td><strong>₹ <%= Number(bill.totalAmount).toFixed(2) %></strong></td>
+
+              <td class="text-center">
+                <a href="/bill/<%= bill._id %>" class="btn btn-sm btn-primary">View</a>
+
+                <a href="/bill/<%= bill._id %>/pdf" class="btn btn-sm btn-outline-dark">PDF</a>
+
+                <a
+                  href="/bill/<%= bill._id %>/delete"
+                  class="btn btn-sm btn-danger"
+                  onclick="return confirm('Are you sure? This bill will move to temporary delete for 15 days.')"
+                >
+                  Delete
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

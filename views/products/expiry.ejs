@@ -1,0 +1,46 @@
+<%- include('../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Expiry Products (Next 6 Months)</h3>
+  <a href="/products" class="btn btn-secondary">Back to Products</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Batch</th>
+        <th>Expiry Date</th>
+        <th>Quantity</th>
+        <th>Manufacturer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (products.length === 0) { %>
+        <tr>
+          <td colspan="6" class="text-center">No products expiring in next 6 months</td>
+        </tr>
+      <% } %>
+
+      <% products.forEach((product, index) => { 
+          const expiry = new Date(product.expiryDate);
+          const today = new Date();
+          const diffTime = expiry - today;
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      %>
+        <tr class="<%= diffDays <= 30 ? 'table-danger' : diffDays <= 90 ? 'table-warning' : '' %>">
+          <td><%= index + 1 %></td>
+          <td><%= product.name %></td>
+          <td><%= product.batchNo || '' %></td>
+          <td><%= new Date(product.expiryDate).toLocaleDateString() %></td>
+          <td><%= product.quantity %></td>
+          <td><%= product.manufacturer || '' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<%- include('../partials/footer') %>

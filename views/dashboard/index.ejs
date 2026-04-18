@@ -1,0 +1,154 @@
+<%- include('../partials/header') %>
+
+<h3 class="mb-4">Dashboard</h3>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-sm-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="text-muted">Total Revenue</h6>
+        <h4>₹ <%= Number(totalRevenue).toFixed(2) %></h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="text-muted">Today Revenue</h6>
+        <h4>₹ <%= Number(todayRevenue).toFixed(2) %></h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="text-muted">This Month Revenue</h6>
+        <h4>₹ <%= Number(monthRevenue).toFixed(2) %></h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-sm-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="text-muted">This Year Revenue</h6>
+        <h4>₹ <%= Number(yearRevenue).toFixed(2) %></h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4 col-sm-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="text-muted">Total Products</h6>
+        <h4><%= totalProducts %></h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-sm-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="text-muted">Low Stock</h6>
+        <h4><%= lowStockCount %></h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 col-sm-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="text-muted">Expiring Soon</h6>
+        <h4><%= expiringCount %></h4>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <h5 class="mb-3">Download Monthly Sales Excel</h5>
+
+    <form method="GET" action="/dashboard/month-sales-excel" class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Month</label>
+        <select name="month" class="form-select" required>
+          <option value="">Select Month</option>
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Year</label>
+        <input type="number" name="year" class="form-control" placeholder="Enter year" required>
+      </div>
+
+      <div class="col-md-4">
+        <button class="btn btn-success">Download Excel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <h5 class="mb-3">Day-wise Revenue</h5>
+    <canvas id="salesChart"></canvas>
+  </div>
+</div>
+
+<script id="chartDataJson" type="application/json">
+  <%- JSON.stringify({
+    labels: chartLabels || [],
+    data: chartData || []
+  }) %>
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const chartRaw = document.getElementById("chartDataJson").textContent;
+  const chartDataObj = JSON.parse(chartRaw);
+
+  const labels = chartDataObj.labels || [];
+  const data = chartDataObj.data || [];
+
+  const ctx = document.getElementById("salesChart").getContext("2d");
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Revenue",
+        data: data,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %>

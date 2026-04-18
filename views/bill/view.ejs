@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice - Print View</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #e8e8e8;
+      color: #000;
+      padding: 12px;
+    }
+
+    /* ===================== SCREEN VIEW ===================== */
+    .screen-view { display: block; max-width: 1000px; margin: 0 auto; }
+    .print-two-up { display: none; }
+
+    .invoice-sheet {
+      width: 100%;
+      background: #fff;
+      border: 2px solid #000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- Title Bar --- */
+    .title-bar {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 900;
+      padding: 4px 0;
+      border-bottom: 2px solid #000;
+      letter-spacing: 1px;
+    }
+
+    /* --- Header Grid --- */
+    .header-grid {
+      display: grid;
+      /* STRICT GRID RATIOS: Prevents long text from stretching the boxes */
+      grid-template-columns: minmax(0, 2.8fr) minmax(0, 1fr) minmax(0, 1.5fr); 
+      border-bottom: 2px solid #000;
+    }
+
+    /* SELLER BOX STRUCTURAL FIX */
+    .header-box {
+      padding: 6px 8px;
+      border-right: 2px solid #000;
+      /* FORCES TEXT WRAPPING: Fixes the GST/Phone number issue */
+      word-wrap: break-word;
+      word-break: break-word; 
+    }
+    .header-box.seller-box {
+      position: relative; 
+      padding-right: 260px; /* Slight increase to protect text from shifted logo */
+    }
+    .header-box:last-child { border-right: none; }
+
+    .seller-box-inner {
+      display: block; 
+    }
+
+    .seller-name {
+      color: #cc0000;
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.1;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      white-space: normal; 
+    }
+
+    .seller-address { font-size: 10px; font-weight: 800; line-height: 1.2; text-transform: uppercase; margin-bottom: 4px; }
+    .seller-line { font-size: 10px; font-weight: 800; line-height: 1.3; }
+    
+    /* LOGO FIX - SIZE UNCHANGED, SHIFTED DOWN FROM TOP LINE */
+    .seller-logo {
+      position: absolute; 
+      right: 15px; 
+      top: 18px; /* INCREASED: Pushed further down from the top line */
+      bottom: 2px; /* Decreased to maintain overall space while shifting down */
+      width: 240px; /* Size kept identical */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .seller-logo img { 
+      width: 100%; 
+      max-width: 400px; /* Size kept identical */
+      height: auto; 
+      max-height: 500px; /* Size kept identical */
+      object-fit: contain; 
+    }
+
+    .meta-row {
+      display: grid;
+      grid-template-columns: 85px 10px 1fr;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
+    .total-red { color: #cc0000; font-weight: 900; }
+
+    .buyer-label { font-size: 11px; font-weight: 900; margin-bottom: 2px; }
+    .buyer-name { color: #1a3cb0; font-size: 14px; font-weight: 900; text-transform: uppercase; margin-bottom: 2px; }
+    .buyer-line { font-size: 10px; font-weight: 800; line-height: 1.3; text-transform: uppercase; }
+
+    /* --- Items Table --- */
+    .items-container { flex-grow: 1; border-bottom: 2px solid #000; }
+    .items-table { width: 100%; border-collapse: collapse; height: 100%; table-layout: auto; }
+    
+    .items-table th, .items-table td {
+      border-right: 1px solid #000;
+      border-bottom: 1px solid #000;
+      font-size: 10px;
+      padding: 3px 4px;
+      text-align: center;
+    }
+    .items-table th:last-child, .items-table td:last-child { border-right: none; }
+    .items-table th { font-weight: 900; border-bottom: 2px solid #000; }
+    .items-table td.left { text-align: left; }
+    
+    .blank-row td { border-bottom: none; height: 100%; min-height: 40px; }
+
+    /* --- Remark Row --- */
+    .remark-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid #000;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    /* --- Bottom Grid --- */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr);
+    }
+
+    .gst-side { padding: 4px; border-right: 2px solid #000; }
+    .totals-side { padding: 4px; }
+
+    .gst-table, .amount-table { width: 100%; border-collapse: collapse; }
+    .gst-table th, .gst-table td, .amount-table td {
+      border: 1px solid #000;
+      font-size: 9px;
+      padding: 3px 4px;
+      text-align: center;
+    }
+    .gst-table th { font-weight: 900; }
+    
+    .amount-table td:first-child { text-align: left; font-weight: 700; width: 60%; }
+    .amount-table td:last-child { text-align: right; font-weight: 800; }
+    .bold-row td { font-weight: 900; }
+    .grand-row td { font-size: 12px; font-weight: 900; background: #f0f0f0; }
+
+    .payment-line { font-size: 8px; font-weight: 800; margin-top: 4px; line-height: 1.2; }
+    .bottom-note { margin-top: 4px; font-size: 8px; font-weight: 800; line-height: 1.3; }
+
+    /* --- Words Line --- */
+    .words-line {
+      border-top: 2px solid #000;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    /* --- Sign Row --- */
+    .sign-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      min-height: 50px;
+      border-top: 2px solid #000;
+    }
+    .sign-row > div {
+      padding: 4px 8px 6px;
+      border-right: 1px solid #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .sign-row > div:last-child { border-right: none; }
+    .sign-head { font-size: 9px; font-weight: 900; }
+
+    /* --- Action Bar --- */
+    .action-bar { text-align: center; padding: 15px 0; }
+    .action-bar button, .action-bar a {
+      display: inline-block; margin: 0 5px; padding: 10px 18px;
+      border: none; border-radius: 6px; color: #fff;
+      text-decoration: none; font-size: 14px; cursor: pointer; font-weight: 700;
+    }
+    .btn-print { background: #0d6efd; }
+    .btn-pdf { background: #6c757d; }
+    .btn-new { background: #198754; }
+
+    /* ===================== PRINT SPECIFIC SETTINGS ===================== */
+    @page {
+      size: A4 portrait;
+      margin: 5mm;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .screen-view, .action-bar { display: none !important; }
+      .print-two-up { display: block !important; }
+
+      .print-page {
+        height: 287mm; 
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        page-break-after: always;
+      }
+
+      .invoice-sheet {
+        height: 140mm; 
+        width: 100%;
+        border: 2px solid #000;
+      }
+
+      .title-bar { font-size: 11px; padding: 2px 0; }
+      
+      .seller-name { font-size: 11pt; margin-bottom: 2px; }
+      .seller-address, .seller-line, .buyer-line, .meta-row { font-size: 8pt; }
+      
+      /* PRINT MARGIN ADJUSTMENT: Exact spacing maintained */
+      .header-box { padding: 4px; } 
+      .header-box.seller-box { padding-right: 190px; } 
+      
+      /* PRINT LOGO SIZE UNCHANGED, SHIFTED DOWN FROM TOP LINE */
+      .seller-logo { 
+        width: 170px; /* Size kept identical */
+        right: 10px; 
+        top: 14px; /* INCREASED: Pushed further down from the top line */
+        bottom: 2px; /* Decreased to maintain overall space */
+      } 
+      .seller-logo img { 
+        max-width: 300px; /* Size kept identical */
+        height: auto; 
+        max-height: 400px; /* Size kept identical */
+      }
+
+      .buyer-name { font-size: 11pt; }
+      .buyer-label { font-size: 9pt; }
+      
+      .items-table th { font-size: 8pt; padding: 2px; }
+      .items-table td { font-size: 8pt; padding: 2px; }
+      
+      .remark-row { font-size: 8pt; padding: 2px 6px; }
+      
+      .gst-table th, .gst-table td, .amount-table td { font-size: 7.5pt; padding: 2px; }
+      .grand-row td { font-size: 10pt; }
+      
+      .payment-line, .bottom-note { font-size: 7pt; }
+      .words-line { font-size: 8pt; padding: 2px 6px; }
+      .sign-row { min-height: 35px; }
+      .sign-head { font-size: 7pt; }
+      .grand-row td { background: transparent !important; } 
+    }
+  </style>
+</head>
+<body>
+
+  <div class="screen-view">
+    <%- include('./invoice-content', { bill, admin }) %>
+    <div class="action-bar">
+      <button class="btn-print" onclick="window.print()">🖨 Print Invoice</button>
+      <a href="/bill/<%= bill._id %>/pdf" class="btn-pdf">⬇ Download PDF</a>
+      <a href="/bill/create" class="btn-new">+ New Bill</a>
+    </div>
+  </div>
+
+  <div class="print-two-up">
+    <div class="print-page">
+      <%- include('./invoice-content', { bill, admin }) %>
+      <%- include('./invoice-content', { bill, admin }) %>
+    </div>
+  </div>
+
+</body>
+</html

@@ -1,0 +1,82 @@
+<%- include('../partials/header') %>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <h3 class="mb-4">Add Product</h3>
+
+    <form method="POST" action="/products/add" class="row g-3">
+
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Product Name</label>
+        <input type="text" name="name" class="form-control" placeholder="Enter medicine name" required>
+        <small class="text-muted">Example: Paracetamol 650</small>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Manufacturer</label>
+        <input type="text" name="manufacturer" class="form-control" placeholder="Enter company/manufacturer name" required>
+        <small class="text-muted">Example: Cipla, Sun Pharma</small>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Batch Number</label>
+        <input type="text" name="batchNo" class="form-control" placeholder="Enter batch number" required>
+        <small class="text-muted">Printed on medicine strip/box</small>
+      </div>
+        <div class="col-md-4">
+  <label class="form-label fw-bold">MFG Date</label>
+  <input type="date" name="mfgDate" class="form-control" required>
+  <small class="text-muted">Select manufacturing date</small>
+</div>
+
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Expiry Date</label>
+        <input type="date" name="expiryDate" class="form-control" required>
+        <small class="text-muted">Select actual expiry date</small>
+      </div>
+     
+
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Quantity</label>
+        <input type="number" name="quantity" class="form-control" placeholder="Enter stock quantity" min="0" required>
+        <small class="text-muted">How many units are in stock</small>
+      </div>
+      <div class="col-md-4">
+  <label class="form-label fw-bold">Pieces Per Pack</label>
+  <input type="number" name="piecesPerPack" class="form-control" placeholder="Enter pieces per strip/pack" min="0" required>
+  <small class="text-muted">Example: 10, 15, 100</small>
+</div>
+      <div class="col-md-4">
+        <label class="form-label fw-bold">Purchase Price</label>
+        <input type="number" step="0.01" name="purchasePrice" class="form-control" placeholder="Enter purchase price" required>
+        <small class="text-muted">Price at which you bought product</small>
+      </div>
+      
+
+      <div class="col-md-4">
+  <label class="form-label fw-bold">PTR Price</label>
+  <input type="number" step="0.01" name="ptrPrice" class="form-control" placeholder="Enter PTR price" required>
+</div>
+
+<div class="col-md-4">
+  <label class="form-label fw-bold">PTS Price</label>
+  <input type="number" step="0.01" name="ptsPrice" class="form-control" placeholder="Enter PTS price" required>
+</div>
+      <div class="col-md-4">
+  
+      <div class="col-md-4">
+        <label class="form-label fw-bold">GST Rate (%)</label>
+        <input type="number" step="0.01" name="gstRate" class="form-control" placeholder="Enter GST %" required>
+        <small class="text-muted">Example: 5, 12, 18</small>
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-success">Save Product</button>
+        <a href="/products" class="btn btn-secondary">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

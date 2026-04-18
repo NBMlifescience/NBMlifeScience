@@ -1,0 +1,303 @@
+<%- include('../partials/header') %>
+
+<h3>Create Bill</h3>
+
+<form id="billForm" method="POST" action="/bill/save">
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <h5 class="mb-3">Buyer Information</h5>
+
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Buyer Name</label>
+          <input name="buyer[name]" class="form-control focus-field" placeholder="Enter buyer/customer name" required>
+          <small class="text-muted">Example: Rahul Medical</small>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Address</label>
+          <input name="buyer[address]" class="form-control focus-field" placeholder="Enter buyer address">
+          <small class="text-muted">Shop or customer address</small>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label fw-bold">DL No.</label>
+          <input name="buyer[dlNo]" class="form-control focus-field" placeholder="Enter DL No">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label fw-bold">GSTIN</label>
+          <input name="buyer[gstin]" class="form-control focus-field" placeholder="Enter GST number">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label fw-bold">Phone</label>
+          <input name="buyer[phone]" class="form-control focus-field" placeholder="Enter phone number">
+        </div>
+        <div class="col-md-2">
+  <label class="form-label fw-bold">Place of Order</label>
+  <input name="buyer[placeOfSupply]" class="form-control focus-field" placeholder="Enter place">
+</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered" id="productTable">
+      <thead class="table-dark">
+        <tr>
+          <th>Product</th>
+          <th>Batch</th>
+          <th>MFG</th>
+          <th>EXP</th>
+          <th>Price Type</th>
+          <th>Price</th>
+          <th>Disc% (20%)</th>
+          <th>GST%</th>
+          <th>Qty</th>
+          <th>Scheme Free</th>
+          <th>Total</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="d-flex justify-content-end mt-3">
+    <button class="btn btn-success">Save Bill</button>
+  </div>
+</form>
+
+<script id="productData" type="application/json">
+  <%- JSON.stringify(products) %>
+</script>
+
+<script>
+const products = JSON.parse(
+  document.getElementById("productData").textContent
+);
+
+const MIN_ROWS = 10;
+const FIXED_DISCOUNT = 20;
+
+function addRow() {
+  const index = document.querySelectorAll("#productTable tbody tr").length;
+
+  const row = document.createElement("tr");
+
+  row.innerHTML = `
+    <td>
+      <select name="items[${index}][productId]" class="form-control productSelect focus-field">
+        <option value="">Select</option>
+        ${products.map(p => `<option value="${p._id}">${p.name}</option>`).join("")}
+      </select>
+    </td>
+
+    <td class="batch"></td>
+    <td class="mfg"></td>
+    <td class="expiry"></td>
+
+    <td>
+      <select name="items[${index}][priceType]" class="form-control priceType focus-field">
+        <option value="ptr">PTR</option>
+        <option value="pts">PTS</option>
+      </select>
+    </td>
+
+    <td class="price"></td>
+    <td class="discount">${FIXED_DISCOUNT}%</td>
+    <td class="gst"></td>
+
+    <td>
+      <input type="number"
+        name="items[${index}][quantity]"
+        class="form-control qty focus-field"
+        value="0" min="0">
+    </td>
+
+    <td>
+      <input type="number"
+        name="items[${index}][freeQty]"
+        class="form-control freeQty focus-field"
+        value="0" min="0">
+    </td>
+
+    <td class="total">0</td>
+
+    <td>
+      <button type="button" class="btn btn-danger" onclick="removeRow(this)">X</button>
+    </td>
+  `;
+
+  document.querySelector("#productTable tbody").appendChild(row);
+  attachEvents(row);
+}
+
+function removeRow(btn) {
+  const rows = document.querySelectorAll("#productTable tbody tr");
+
+  if (rows.length <= MIN_ROWS) {
+    alert("Minimum 10 rows must remain");
+    return;
+  }
+
+  btn.closest("tr").remove();
+  calculateGrandTotal();
+}
+
+function getSelectedPrice(product, priceType) {
+  if (priceType === "pts") {
+    return Number(product.ptsPrice || 0);
+  }
+  return Number(product.ptrPrice || 0);
+}
+
+function attachEvents(row) {
+  const select = row.querySelector(".productSelect");
+  const priceTypeSelect = row.querySelector(".priceType");
+  const qtyInput = row.querySelector(".qty");
+  const freeQtyInput = row.querySelector(".freeQty");
+
+  function refreshRow() {
+    const product = products.find(p => p._id === select.value);
+
+    if (!product) {
+      row.querySelector(".batch").innerText = "";
+      row.querySelector(".mfg").innerText = "";
+      row.querySelector(".expiry").innerText = "";
+      row.querySelector(".price").innerText = "";
+      row.querySelector(".gst").innerText = "";
+      row.querySelector(".total").innerText = "0";
+      calculateGrandTotal();
+      return;
+    }
+
+    row.querySelector(".batch").innerText = product.batchNo || "";
+    row.querySelector(".mfg").innerText = product.mfgDate
+      ? new Date(product.mfgDate).toLocaleDateString()
+      : "";
+    row.querySelector(".expiry").innerText = product.expiryDate
+      ? new Date(product.expiryDate).toLocaleDateString()
+      : "";
+
+    const selectedPrice = getSelectedPrice(product, priceTypeSelect.value);
+
+    row.querySelector(".price").innerText = selectedPrice.toFixed(2);
+    row.querySelector(".gst").innerText = product.gstRate || 0;
+
+    calculateRow(row, product, selectedPrice);
+  }
+
+  select.addEventListener("change", refreshRow);
+  priceTypeSelect.addEventListener("change", refreshRow);
+
+  qtyInput.addEventListener("input", () => {
+    const product = products.find(p => p._id === select.value);
+    if (!product) {
+      row.querySelector(".total").innerText = "0";
+      calculateGrandTotal();
+      return;
+    }
+
+    const selectedPrice = getSelectedPrice(product, priceTypeSelect.value);
+    calculateRow(row, product, selectedPrice);
+  });
+
+  freeQtyInput.addEventListener("input", () => {
+    const product = products.find(p => p._id === select.value);
+    if (!product) {
+      row.querySelector(".total").innerText = "0";
+      calculateGrandTotal();
+      return;
+    }
+
+    const selectedPrice = getSelectedPrice(product, priceTypeSelect.value);
+    calculateRow(row, product, selectedPrice);
+  });
+}
+
+function calculateRow(row, product, selectedPrice) {
+  const qty = Number(row.querySelector(".qty").value) || 0;
+  const gst = Number(product.gstRate || 0);
+
+  const subtotal = qty * selectedPrice;
+  const discount20 = subtotal * (FIXED_DISCOUNT / 100);
+  const taxable = subtotal - discount20;
+  const gstAmount = (taxable * gst) / 100;
+  const total = taxable + gstAmount;
+
+  row.querySelector(".total").innerText = total.toFixed(2);
+  calculateGrandTotal();
+}
+
+function calculateGrandTotal() {
+  let grand = 0;
+
+  document.querySelectorAll(".total").forEach(td => {
+    grand += Number(td.innerText) || 0;
+  });
+
+  document.getElementById("grandTotal").innerText = grand.toFixed(2);
+}
+
+for (let i = 0; i < MIN_ROWS; i++) {
+  addRow();
+}
+
+document.getElementById("billForm").addEventListener("submit", function (e) {
+  const rows = document.querySelectorAll("#productTable tbody tr");
+
+  let hasValidRow = false;
+
+  for (const row of rows) {
+    const select = row.querySelector(".productSelect");
+    const qty = Number(row.querySelector(".qty").value) || 0;
+    const freeQty = Number(row.querySelector(".freeQty").value) || 0;
+
+    const hasProduct = !!select.value;
+    const hasAnyValue = qty > 0 || freeQty > 0;
+
+    if (!hasProduct && !hasAnyValue) {
+      continue;
+    }
+
+    if (!hasProduct && hasAnyValue) {
+      e.preventDefault();
+      alert("Please select a product in all filled rows");
+      return;
+    }
+
+    if (hasProduct && hasAnyValue) {
+      hasValidRow = true;
+    }
+  }
+
+  if (!hasValidRow) {
+    e.preventDefault();
+    alert("Please select at least one valid product");
+  }
+});
+
+// ENTER key should move to next field, not submit
+document.addEventListener("keydown", function (e) {
+  if (e.key !== "Enter") return;
+
+  const tag = e.target.tagName.toLowerCase();
+  if (tag !== "input" && tag !== "select") return;
+
+  e.preventDefault();
+
+  const focusable = Array.from(document.querySelectorAll(".focus-field"))
+    .filter(el => !el.disabled && el.offsetParent !== null);
+
+  const index = focusable.indexOf(e.target);
+
+  if (index > -1 && index < focusable.length - 1) {
+    focusable[index + 1].focus();
+  }
+});
+</script>
+
+<%- include('../partials/footer') %>

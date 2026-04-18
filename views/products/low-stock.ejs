@@ -1,0 +1,41 @@
+<%- include('../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>Low Stock Products</h3>
+  <a href="/products" class="btn btn-secondary">Back to Products</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Batch</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Expiry</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (products.length === 0) { %>
+        <tr>
+          <td colspan="6" class="text-center">No low stock products</td>
+        </tr>
+      <% } %>
+
+      <% products.forEach((product, index) => { %>
+        <tr class="table-warning">
+          <td><%= index + 1 %></td>
+          <td><%= product.name %></td>
+          <td><%= product.batchNo || '' %></td>
+          <td><%= product.quantity %></td>
+          <td>₹ <%= product.sellingPrice %></td>
+          <td><%= product.expiryDate ? new Date(product.expiryDate).toLocaleDateString() : '' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<%- include('../partials/footer') %>

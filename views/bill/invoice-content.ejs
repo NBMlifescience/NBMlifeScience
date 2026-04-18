@@ -1,0 +1,211 @@
+<%
+  const items = bill.items || [];
+  const grossTotal = Number(bill.totalAmount || 0);
+
+  const taxableAmt = items.reduce((sum, item) => {
+    const total = Number(item.total || 0);
+    const gstRate = Number(item.gst || 0);
+    const taxable = gstRate > 0 ? total / (1 + gstRate / 100) : total;
+    return sum + taxable;
+  }, 0);
+
+  const totalGst = grossTotal - taxableAmt;
+  const sgst = totalGst / 2;
+  const cgst = totalGst / 2;
+  const totalItems = items.length;
+
+  function formatExp(dateValue) {
+    if (!dateValue) return "";
+    const d = new Date(dateValue);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yy = String(d.getFullYear()).slice(-2);
+    return `${mm}/${yy}`;
+  }
+
+  function formatDate(dateValue) {
+    if (!dateValue) return "";
+    return new Date(dateValue).toLocaleDateString("en-GB");
+  }
+%>
+
+<div class="invoice-sheet">
+  <div class="title-bar">GST Invoice</div>
+
+  <div class="header-grid">
+    <div class="header-box seller-box">
+      <div class="seller-box-inner">
+        <div class="seller-text">
+          <div class="seller-name"><%= admin.shopName || "" %></div>
+          <div class="seller-address"><%= admin.shopAddress || "" %></div>
+          <div class="seller-line">Phone : <%= admin.shopPhone || "" %></div>
+          <div class="seller-line">DL No.1 : <%= admin.shopDrugLicense || "" %></div>
+          <div class="seller-line">GSTIN No. : <%= admin.shopGSTIN || "" %></div>
+        </div>
+        <div class="seller-logo">
+          <img src="<%= admin.logoPath || '/images/logo.png' %>" alt="Logo">
+        </div>
+      </div>
+    </div>
+
+    <div class="header-box meta-box">
+      <div class="meta-row"><span>Inv No.</span><span>:</span><span><%= bill.billNumber || "" %></span></div>
+      <div class="meta-row"><span>Date</span><span>:</span><span><%= new Date(bill.date || Date.now()).toLocaleDateString('en-GB') %></span></div>
+      <div class="meta-row"><span>Time</span><span>:</span><span><%= new Date(bill.date || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %></span></div>
+      <div class="meta-row total-red" style="margin-top: 5px;"><span>Total Outstanding</span><span>:</span><span><%= grossTotal.toFixed(2) %></span></div>
+    </div>
+
+    <div class="header-box buyer-box">
+      <div class="buyer-label">TO:</div>
+      <div class="buyer-name"><%= bill.buyer?.name || "" %></div>
+      <div class="buyer-line"><%= bill.buyer?.address || "" %></div>
+      <div class="buyer-line"><strong>DL No. :</strong> <%= bill.buyer?.dlNo || "" %></div>
+      <div class="buyer-line"><strong>GST No. :</strong> <%= bill.buyer?.gstin || "" %></div>
+      <div class="buyer-line"><strong>Phone No. :</strong> <%= bill.buyer?.phone || "" %></div>
+      <div class="buyer-line"><strong>Place of Order :</strong> <%= bill.buyer?.placeOfSupply || "" %></div>
+    </div>
+  </div>
+
+  <div class="items-container">
+    <table class="items-table">
+      <colgroup>
+        <col style="width:7%">
+        <col style="width:20%">
+        <col style="width:6%">
+        <col style="width:6%">
+        <col style="width:5%">
+        <col style="width:5%">
+        <col style="width:8%">
+        <col style="width:7%">
+        <col style="width:6%">
+        <col style="width:6%">
+        <col style="width:6%">
+        <col style="width:7%">
+        <col style="width:5%">
+        <col style="width:6%">
+        <col style="width:7%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>HSN</th>
+          <th>Description</th>
+          <th>Price Type</th>
+          <th>Pack</th>
+          <th>QTY</th>
+          <th>Scm</th>
+          <th>Batch</th>
+          <th>MFG</th>
+          <th>EXP</th>
+          <th>MRP</th>
+          <th>Rate</th>
+          <th>Disc</th>
+          <th>Taxable</th>
+          <th>% GST</th>
+          <th>GST Amt</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% items.forEach(item => { 
+          const lineTotal = Number(item.total || 0);
+          const gstRate = Number(item.gst || 0);
+          const taxable = gstRate > 0 ? lineTotal / (1 + gstRate / 100) : lineTotal;
+          const gstAmt = lineTotal - taxable;
+        %>
+          <tr>
+            <td><%= item.hsn || "30049069" %></td>
+            <td class="left"><strong><%= item.name || "" %></strong></td>
+            <td><%= (item.priceType || "ptr").toUpperCase() %></td>
+            <td><%= item.piecesPerPack || 0 %></td>
+            <td><%= item.quantity || 0 %></td>
+            <td><%= item.freeQty || 0 %></td>
+            <td><%= item.batch || "" %></td>
+            <td><%= formatDate(item.mfgDate) %></td>
+            <td><%= formatExp(item.expiry) %></td>
+            <td><%= Number(item.mrp || item.price || 0).toFixed(2) %></td>
+            <td><%= Number(item.rate || item.price || 0).toFixed(2) %></td>
+            <td>0.00</td>
+            <td><%= taxable.toFixed(2) %></td>
+            <td><%= gstRate.toFixed(2) %></td>
+            <td><%= gstAmt.toFixed(2) %></td>
+          </tr>
+        <% }) %>
+
+        <tr class="blank-row">
+          <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="remark-row">
+    <div>Remark :</div>
+    <div>Total Items - <%= totalItems || 0 %></div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="gst-side">
+      <table class="gst-table">
+        <thead>
+          <tr>
+            <th>CLASS</th>
+            <th>Taxable Amt (INR)</th>
+            <th>Disc Amt</th>
+            <th>SGST</th>
+            <th>CGST</th>
+            <th>TOTAL GST</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>GST 5.00 %</td>
+            <td><%= taxableAmt.toFixed(2) %></td>
+            <td>0.00</td>
+            <td><%= sgst.toFixed(2) %></td>
+            <td><%= cgst.toFixed(2) %></td>
+            <td><%= totalGst.toFixed(2) %></td>
+          </tr>
+          <tr class="bold-row">
+            <td>TOTAL</td>
+            <td><%= taxableAmt.toFixed(2) %></td>
+            <td>0.00</td>
+            <td><%= sgst.toFixed(2) %></td>
+            <td><%= cgst.toFixed(2) %></td>
+            <td><%= totalGst.toFixed(2) %></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="bottom-note" style="margin-top: 10px;">
+        
+      </div>
+    </div>
+
+    <div class="totals-side">
+      <table class="amount-table">
+        <tbody>
+          <tr><td>SUB TOTAL</td><td><%= taxableAmt.toFixed(2) %></td></tr>
+          <tr><td>Sch.Disc</td><td>0.00</td></tr>
+          <tr><td>Cash Disc</td><td>0.00</td></tr>
+          <tr><td>CGST</td><td><%= cgst.toFixed(2) %></td></tr>
+          <tr><td>SGST</td><td><%= sgst.toFixed(2) %></td></tr>
+          <tr><td>CR/DR NOTE</td><td>0.00</td></tr>
+          <tr><td>ROUND OFF</td><td><%= (grossTotal - Math.floor(grossTotal)).toFixed(2) %></td></tr>
+          <tr class="bold-row grand-row"><td>GRAND TOTAL</td><td><%= Math.floor(grossTotal).toFixed(2) %></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="words-line">
+    Rs. <%= amountInWords || "" %>
+  </div>
+
+  <div class="sign-row">
+    <div><div class="sign-head">Receivers Signature</div></div>
+    <div>
+      <div class="sign-head">CHECKED BY :</div>
+      <div style="font-size:7pt;font-weight:800;margin-top:2px;">DELIVERED BY :</div>
+    </div>
+    <div><div class="sign-head">Auth.Signature</div></div>
+  </div>
+</div>

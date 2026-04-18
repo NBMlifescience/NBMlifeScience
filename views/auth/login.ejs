@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - NBM Billing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 450px;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+    }
+
+    .brand-top {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    /* 🔥 LOGO FIX APPLIED HERE */
+    .brand-top img {
+      height: 120px; /* Tightly controls the layout space */
+      width: 100%;
+      object-fit: contain;
+      transform: scale(1.8); /* Magnifies the logo to kill the invisible transparent space */
+      transform-origin: center center;
+      display: block;
+      margin: 0 auto 24px; /* Added a bit more bottom margin to clear the scaled image */
+    }
+
+    .brand-top h2 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .brand-top p {
+      margin: 6px 0 0;
+      color: #64748b;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .form-label {
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .form-control {
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 1rem;
+    }
+
+    .btn-login {
+      width: 100%;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      background: #2563eb;
+      border: none;
+    }
+
+    .btn-login:hover {
+      background: #1d4ed8;
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 16px;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .alert {
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="brand-top">
+      <img src="/images/logo.png" alt="Logo">
+      <h2>NBM </h2>
+      <p>Medical Billing & Inventory System</p>
+    </div>
+
+    <% if (error_msg && error_msg.length > 0) { %>
+      <div class="alert alert-danger">
+        <%= error_msg[0] %>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/login">
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-login">Login</button>
+    </form>
+
+    <div class="login-footer">
+      Secure access for admin only
+    </div>
+  </div>
+
+</body>
+</html>
